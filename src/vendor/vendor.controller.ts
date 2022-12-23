@@ -1,8 +1,21 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { VendorService } from './vendor.service';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+} from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CreateVendorDto } from './dto/create-vendor.dto';
 import { UpdateVendorDto } from './dto/update-vendor.dto';
+import { VendorService } from './vendor.service';
 
+@ApiBearerAuth()
+@ApiTags('Vendor')
 @Controller('vendor')
 export class VendorController {
   constructor(private readonly vendorService: VendorService) {}
@@ -27,6 +40,7 @@ export class VendorController {
     return this.vendorService.update(+id, updateVendorDto);
   }
 
+  @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.vendorService.remove(+id);

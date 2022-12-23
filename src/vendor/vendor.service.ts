@@ -1,26 +1,55 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { Vendor } from '@prisma/client';
+import { PrismaService } from '../prisma/prisma.service';
 import { CreateVendorDto } from './dto/create-vendor.dto';
 import { UpdateVendorDto } from './dto/update-vendor.dto';
 
 @Injectable()
 export class VendorService {
-  create(createVendorDto: CreateVendorDto) {
-    return 'This action adds a new vendor';
+  constructor(private readonly prisma: PrismaService) {}
+
+  async create(createVendorDto: CreateVendorDto): Promise<Vendor> {
+    const vendor = await this.prisma.vendor.create({
+      data: createVendorDto,
+    });
+    return vendor;
   }
 
-  findAll() {
-    return `This action returns all vendor`;
+  async findAll(): Promise<Vendor[]> {
+    const vendors = await this.prisma.vendor.findMany();
+    return vendors;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} vendor`;
+  async findOne(id: number): Promise<Vendor> {
+    const vendor = await this.prisma.vendor.findUnique({
+      where: {
+        id,
+      },
+    });
+
+    if (!vendor) {
+      throw new NotFoundException(`Vendor #${id} not found`);
+    }
+
+    return vendor;
   }
 
-  update(id: number, updateVendorDto: UpdateVendorDto) {
-    return `This action updates a #${id} vendor`;
+  async update(id: number, updateVendorDto: UpdateVendorDto): Promise<Vendor> {
+    const vendor = await this.prisma.vendor.update({
+      where: {
+        id,
+      },
+      data: updateVendorDto,
+    });
+
+    return vendor;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} vendor`;
+  async remove(id: number): Promise<void> {
+    await this.prisma.vendor.delete({
+      where: {
+        id,
+      },
+    });
   }
 }
