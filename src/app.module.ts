@@ -15,6 +15,7 @@ import { PrismaService } from './prisma/prisma.service';
       validationSchema: configValidationSchema,
     }),
     AuthModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
