@@ -12,7 +12,7 @@ export class CategoriesService {
   async create(createCategoryDto: CreateCategoryDto): Promise<Category> {
     const { name } = createCategoryDto;
 
-    const slug = slugify(name);
+    const slug = slugify(name, { lower: true });
     const category = await this.prisma.category.create({
       data: { name, slug },
     });
