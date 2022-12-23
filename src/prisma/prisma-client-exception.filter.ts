@@ -38,7 +38,7 @@ export class PrismaClientExceptionFilter extends BaseExceptionFilter {
       case 'P2003':
         response.status(HttpStatus.CONFLICT).json({
           statusCode: HttpStatus.CONFLICT,
-          message: `Foreign key constraint failed on the field: ${exception.meta.target}`,
+          message: `Foreign key constraint failed on the field: ${exception.meta.field_name}`,
         });
         break;
       default:
