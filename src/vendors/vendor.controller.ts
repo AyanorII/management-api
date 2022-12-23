@@ -8,15 +8,18 @@ import {
   Param,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CreateVendorDto } from './dto/create-vendor.dto';
 import { UpdateVendorDto } from './dto/update-vendor.dto';
 import { VendorsService } from './vendors.service';
 
 @ApiBearerAuth()
-@ApiTags('Vendor')
-@Controller('vendor')
+@ApiTags('Vendors')
+@Controller('vendors')
+@UseGuards(AuthGuard('jwt'))
 export class VendorsController {
   constructor(private readonly vendorsService: VendorsService) {}
 
