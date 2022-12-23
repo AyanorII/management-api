@@ -25,6 +25,20 @@ export class UsersService {
     return user;
   }
 
+  async findOne(email: string) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        email,
+      },
+    });
+
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+
+    return user;
+  }
+
   // Private
   private async _checkIfUserExists(email: string): Promise<void> {
     const user = await this.prisma.user.findUnique({
