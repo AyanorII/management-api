@@ -12,37 +12,37 @@ import {
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CreateVendorDto } from './dto/create-vendor.dto';
 import { UpdateVendorDto } from './dto/update-vendor.dto';
-import { VendorService } from './vendor.service';
+import { VendorsService } from './vendors.service';
 
 @ApiBearerAuth()
 @ApiTags('Vendor')
 @Controller('vendor')
-export class VendorController {
-  constructor(private readonly vendorService: VendorService) {}
+export class VendorsController {
+  constructor(private readonly vendorsService: VendorsService) {}
 
   @Post()
   create(@Body() createVendorDto: CreateVendorDto) {
-    return this.vendorService.create(createVendorDto);
+    return this.vendorsService.create(createVendorDto);
   }
 
   @Get()
   findAll() {
-    return this.vendorService.findAll();
+    return this.vendorsService.findAll();
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.vendorService.findOne(+id);
+    return this.vendorsService.findOne(+id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateVendorDto: UpdateVendorDto) {
-    return this.vendorService.update(+id, updateVendorDto);
+    return this.vendorsService.update(+id, updateVendorDto);
   }
 
   @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.vendorService.remove(+id);
+    return this.vendorsService.remove(+id);
   }
 }

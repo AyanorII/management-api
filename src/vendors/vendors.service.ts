@@ -6,7 +6,7 @@ import { CreateVendorDto } from './dto/create-vendor.dto';
 import { UpdateVendorDto } from './dto/update-vendor.dto';
 
 @Injectable()
-export class VendorService {
+export class VendorsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(createVendorDto: CreateVendorDto): Promise<Vendor> {
