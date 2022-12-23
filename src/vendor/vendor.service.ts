@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Vendor } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { Product } from '../products/entities/product.entity';
 import { CreateVendorDto } from './dto/create-vendor.dto';
 import { UpdateVendorDto } from './dto/update-vendor.dto';
 
@@ -24,6 +25,10 @@ export class VendorService {
     const vendor = await this.prisma.vendor.findUnique({
       where: {
         id,
+      },
+      include: {
+        products: true,
+        _count: true,
       },
     });
 
@@ -51,5 +56,19 @@ export class VendorService {
         id,
       },
     });
+  }
+
+  async vendorProducts(id: number): Promise<Product[]> {
+    const vendor = await this.prisma.vendor.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        products: true,
+        _count: true,
+      },
+    });
+
+    return vendor.products;
   }
 }

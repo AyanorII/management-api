@@ -10,7 +10,7 @@ export class ProductsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(createProductDto: CreateProductDto): Promise<Product> {
-    const { categoryId, ...data } = createProductDto;
+    const { categoryId, vendors, ...data } = createProductDto;
 
     const product = await this.prisma.product.create({
       data: {
@@ -23,6 +23,9 @@ export class ProductsService {
             id: categoryId,
           },
         },
+        vendors: {
+          connect: vendors.map((id) => ({ id })),
+        },
       },
       include: {
         category: {
@@ -32,6 +35,7 @@ export class ProductsService {
             slug: true,
           },
         },
+        vendors: true,
       },
     });
     return product;
@@ -46,6 +50,10 @@ export class ProductsService {
       where: {
         id,
       },
+      include: {
+        category: true,
+        vendors: true,
+      },
     });
 
     if (!product) {
@@ -59,7 +67,8 @@ export class ProductsService {
     id: number,
     updateProductDto: UpdateProductDto,
   ): Promise<Product> {
-    const data = { ...updateProductDto };
+    const { vendors, ...rest } = updateProductDto;
+    const data = { ...rest };
 
     const { name } = updateProductDto;
     if (name) {
@@ -70,7 +79,12 @@ export class ProductsService {
       where: {
         id,
       },
-      data,
+      data: {
+        ...data,
+        vendors: {
+          connect: vendors.map((id) => ({ id })),
+        },
+      },
     });
     return product;
   }
