@@ -12,9 +12,10 @@ datasource db {
 
 model Product {
   id         Int      @id @default(autoincrement())
-  name       String
+  name       String   @unique
   price      Float
   cost       Float
+  slug       String   @unique
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
   vendors    Vendor[]
