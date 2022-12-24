@@ -52,3 +52,21 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+model Employee {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  phone     String
+  gender    Gender   @default(FEMALE)
+  startedAt DateTime
+  active    Boolean  @default(true)
+  salary    Float
+  photo     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
