@@ -5,4 +5,6 @@ export const configValidationSchema = Joi.object({
   PORT: Joi.number().default(8000),
   JWT_SECRET: Joi.string().required(),
   JWT_REFRESH_SECRET: Joi.string().required(),
+  CORS_ORIGIN: Joi.string().required(),
+  ENV: Joi.string().valid('development', 'production').default('development'),
 });

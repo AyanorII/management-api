@@ -12,6 +12,10 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   const port = configService.get('PORT');
 
+  app.enableCors({
+    origin: configService.get('CORS_ORIGIN'),
+  });
+
   // Swagger API documentation
   const config = new DocumentBuilder()
     .setTitle('Management API')
