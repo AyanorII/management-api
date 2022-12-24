@@ -1,10 +1,10 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserWithoutPassword } from './interfaces';
-import { User } from '@prisma/client';
 
 @Injectable()
 export class UsersService {
@@ -56,6 +56,25 @@ export class UsersService {
     const { password, ...user } = updatedUser;
 
     return user;
+  }
+
+  async removeRefreshToken(id: number): Promise<void> {
+    // Using updateMany because we need to update only the user that has a refresh token.
+    const user = await this.prisma.user.updateMany({
+      where: {
+        id,
+        refreshToken: {
+          not: null,
+        },
+      },
+      data: {
+        refreshToken: null,
+      },
+    });
+
+    if (user.count === 0) {
+      throw new BadRequestException('User not found');
+    }
   }
 
   // Private

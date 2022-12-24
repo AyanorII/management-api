@@ -33,6 +33,10 @@ export class AuthService {
     return tokens;
   }
 
+  async logout(id: number): Promise<void> {
+    await this.usersService.update(id, { refreshToken: null });
+  }
+
   async getTokens(userId: number, email: string): Promise<Tokens> {
     const [access_token, refresh_token] = await Promise.all([
       this.jwtService.signAsync(
