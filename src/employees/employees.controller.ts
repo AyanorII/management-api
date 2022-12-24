@@ -10,8 +10,8 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { JwtGuard } from '../common/guards/jwt.guard';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
 import { EmployeesService } from './employees.service';
@@ -19,7 +19,7 @@ import { EmployeesService } from './employees.service';
 @ApiTags('Employees')
 @ApiBearerAuth()
 @Controller('employees')
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(JwtGuard)
 export class EmployeesController {
   constructor(private readonly employeesService: EmployeesService) {}
 
