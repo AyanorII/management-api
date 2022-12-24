@@ -1,6 +1,9 @@
 export interface JwtPayload {
-  email: string;
   sub: number;
+  email: string;
+  iat: number;
+  exp: number;
+  refreshToken?: string;
 }
 
 export interface Tokens {

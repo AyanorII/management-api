@@ -4,16 +4,15 @@ import {
   HttpCode,
   HttpStatus,
   Post,
-  Req,
   UseGuards,
 } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { Request } from 'express';
+import { GetUser } from 'src/common/decorators/get-user.decorator';
+import { JwtGuard, RefreshTokenGuard } from '../common/guards';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { SignUpDto } from './dto/signup.dto';
-import { Tokens } from './interfaces';
+import { JwtPayload, Tokens } from './interfaces';
 
 @ApiBearerAuth()
 @ApiTags('Auth')
@@ -33,17 +32,17 @@ export class AuthController {
     return this.authService.signUp(signUpDto);
   }
 
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtGuard)
   @HttpCode(HttpStatus.OK)
   @Post('/logout')
-  async logout(@Req() req: Request) {
-    const user = req.user;
-    return this.authService.logout(user['id']);
+  async logout(@GetUser() user: JwtPayload): Promise<void> {
+    return this.authService.logout(user.sub);
   }
 
-  // @HttpCode(HttpStatus.OK)
-  // @Post('/refresh')
-  // async refreshToken(@Body() signUpDto: SignUpDto): Promise<Tokens> {
-  //   return this.authService.logout(signUpDto);
-  // }
+  @UseGuards(RefreshTokenGuard)
+  @HttpCode(HttpStatus.OK)
+  @Post('/refresh')
+  async refreshToken(@GetUser() user: JwtPayload): Promise<Tokens> {
+    return this.authService.refreshToken(user.sub, user.refreshToken);
+  }
 }

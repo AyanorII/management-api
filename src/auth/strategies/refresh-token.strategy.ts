@@ -14,12 +14,12 @@ export class RefreshTokenStrategy extends PassportStrategy(
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       secretOrKey: configService.get('JWT_REFRESH_SECRET'),
-      passRequestToCallback: true,
+      passReqToCallback: true, // <--- Important. With this option enabled, req will be passed as the first argument to the verify callback.
     });
   }
 
   validate(req: Request, payload: JwtPayload) {
-    const refreshToken = req.get('authorization').replace('Bearer', '').trim();
+    const refreshToken = req.get('Authorization').replace('Bearer', '').trim();
     return {
       ...payload,
       refreshToken,

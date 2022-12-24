@@ -8,11 +8,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { RefreshTokenStrategy } from './strategies/refresh-token.strategy';
 
 @Module({
-  imports: [
-    PassportModule.register({ defaultStrategy: 'jwt' }),
-    JwtModule.register({}),
-    UsersModule,
-  ],
+  imports: [JwtModule.register({}), UsersModule],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, RefreshTokenStrategy],
   exports: [PassportModule],

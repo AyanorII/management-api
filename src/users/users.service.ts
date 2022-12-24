@@ -28,17 +28,13 @@ export class UsersService {
     return user;
   }
 
-  async findOne(email: string): Promise<User> {
-    const user = await this.prisma.user.findUnique({
-      where: {
-        email,
-      },
-    });
+  async findOneByEmail(email: string): Promise<User> {
+    const user = await this._findOneBy('email', email);
+    return user;
+  }
 
-    if (!user) {
-      throw new BadRequestException('User not found');
-    }
-
+  async findOneById(id: number): Promise<User> {
+    const user = await this._findOneBy('id', id);
     return user;
   }
 
@@ -91,5 +87,22 @@ export class UsersService {
   private async _hashPassword(password: string): Promise<string> {
     const salt = await bcrypt.genSalt();
     return bcrypt.hash(password, salt);
+  }
+
+  private async _findOneBy(
+    field: string,
+    value: string | number,
+  ): Promise<User> {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        [field]: value,
+      },
+    });
+
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+
+    return user;
   }
 }

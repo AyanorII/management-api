@@ -25,8 +25,8 @@ export class AuthService {
   }
 
   async login(loginDto: LoginDto): Promise<Tokens> {
-    const user = await this.usersService.findOne(loginDto.email);
-    await this.checkPasswordsMatch(loginDto.password, user.password);
+    const user = await this.usersService.findOneByEmail(loginDto.email);
+    await this.checkHashMatches(loginDto.password, user.password);
     const tokens = await this.getTokens(user.id, user.email);
     await this.updateRefreshToken(user.id, tokens.refresh_token);
 
@@ -35,6 +35,15 @@ export class AuthService {
 
   async logout(id: number): Promise<void> {
     await this.usersService.update(id, { refreshToken: null });
+  }
+
+  async refreshToken(id: number, refreshToken: string): Promise<Tokens> {
+    const user = await this.usersService.findOneById(id);
+    await this.checkHashMatches(refreshToken, user.refreshToken);
+    const tokens = await this.getTokens(user.id, user.email);
+    await this.updateRefreshToken(user.id, tokens.refresh_token);
+
+    return tokens;
   }
 
   async getTokens(userId: number, email: string): Promise<Tokens> {
@@ -69,10 +78,10 @@ export class AuthService {
     await this.usersService.update(userId, { refreshToken: hash });
   }
 
-  async checkPasswordsMatch(password: string, hashedPassword: string) {
-    const passwordMatches = await bcrypt.compare(password, hashedPassword);
+  async checkHashMatches(data: string, encryptedData: string) {
+    const hashMatches = await bcrypt.compare(data, encryptedData);
 
-    if (!passwordMatches) {
+    if (!hashMatches) {
       throw new UnauthorizedException('Invalid credentials');
     }
   }
