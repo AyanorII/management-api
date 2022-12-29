@@ -11,28 +11,39 @@ datasource db {
 }
 
 model Product {
-  id         Int      @id @default(autoincrement())
-  name       String   @unique
-  price      Float
-  cost       Float
-  slug       String   @unique
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  vendors    Vendor[]
-  category   Category @relation(fields: [categoryId], references: [id])
-  categoryId Int
+  id            Int             @id @default(autoincrement())
+  name          String          @unique
+  price         Float
+  cost          Float
+  slug          String          @unique
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  category      Category        @relation(fields: [categoryId], references: [id])
+  categoryId    Int
+  vendorProduct VendorProduct[]
+}
+
+model VendorProduct {
+  id        Int      @id @default(autoincrement())
+  price     Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  vendor    Vendor   @relation(fields: [vendorId], references: [id])
+  vendorId  Int
+  product   Product? @relation(fields: [productId], references: [id])
+  productId Int?
 }
 
 model Vendor {
-  id        Int       @id @default(autoincrement())
-  name      String
-  phone     String?
-  email     String?
-  contact   String?
-  website   String?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  products  Product[]
+  id            Int             @id @default(autoincrement())
+  name          String
+  phone         String?
+  email         String?
+  contact       String?
+  website       String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  vendorProduct VendorProduct[]
 }
 
 model Category {
