@@ -1,15 +1,17 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { configValidationSchema } from '../config.schema';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
-import { UsersModule } from './users/users.module';
-import { PrismaService } from './prisma/prisma.service';
 import { CategoriesModule } from './categories/categories.module';
-import { ProductsModule } from './products/products.module';
-import { VendorsModule } from './vendors/vendors.module';
 import { EmployeesModule } from './employees/employees.module';
+import { PrismaService } from './prisma/prisma.service';
+import { ProductsModule } from './products/products.module';
+import { UsersModule } from './users/users.module';
+import { VendorsModule } from './vendors/vendors.module';
 
 @Module({
   imports: [
@@ -17,6 +19,14 @@ import { EmployeesModule } from './employees/employees.module';
       isGlobal: true,
       envFilePath: '.env',
       validationSchema: configValidationSchema,
+    }),
+    ThrottlerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        ttl: configService.get('THROTTLE_TTL'),
+        limit: configService.get('THROTTLE_LIMIT'),
+      }),
     }),
     AuthModule,
     UsersModule,
@@ -26,6 +36,10 @@ import { EmployeesModule } from './employees/employees.module';
     EmployeesModule,
   ],
   controllers: [AppController],
-  providers: [AppService, PrismaService],
+  providers: [
+    AppService,
+    PrismaService,
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+  ],
 })
 export class AppModule {}

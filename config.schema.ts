@@ -7,4 +7,6 @@ export const configValidationSchema = Joi.object({
   JWT_REFRESH_SECRET: Joi.string().required(),
   CORS_ORIGIN: Joi.string().required(),
   ENV: Joi.string().valid('development', 'production').default('development'),
+  THROTTLE_TTL: Joi.number().default(60),
+  THROTTLE_LIMIT: Joi.number().default(10),
 });
