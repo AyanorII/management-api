@@ -16,15 +16,22 @@ export class UsersService {
 
     const hashedPassword = await this._hashPassword(password);
 
-    const createdUser = await this.prisma.user.create({
+    const user = await this.prisma.user.create({
       data: {
         email,
         password: hashedPassword,
         name,
       },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        createdAt: true,
+        updatedAt: true,
+        refreshToken: true,
+      },
     });
 
-    const { password: _, ...user } = createdUser;
     return user;
   }
 
