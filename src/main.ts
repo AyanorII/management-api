@@ -2,6 +2,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import helmet from 'helmet';
 import { AppModule } from './app.module';
 import { PrismaClientExceptionFilter } from './prisma/prisma-client-exception.filter';
 
@@ -11,6 +12,8 @@ async function bootstrap() {
   // Config service
   const configService = app.get(ConfigService);
   const port = configService.get('PORT');
+
+  app.use(helmet());
 
   app.enableCors({
     origin: configService.get('CORS_ORIGIN'),
