@@ -1,32 +1,24 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Product } from '@prisma/client';
+import { ProductCreateInput, ProductUncheckedCreateInput, XOR } from 'prisma';
 import slugify from 'slugify';
 import { PrismaService } from '../prisma/prisma.service';
+import { VendorProductsService } from '../vendors/vendor-products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 
 @Injectable()
 export class ProductsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly vendorProductsService: VendorProductsService,
+  ) {}
 
   async create(createProductDto: CreateProductDto): Promise<Product> {
-    const { categoryId, vendors, ...data } = createProductDto;
+    const data = await this.buildCreateProductData(createProductDto);
 
     const product = await this.prisma.product.create({
-      data: {
-        ...data,
-        slug: slugify(createProductDto.name, {
-          lower: true,
-        }),
-        category: {
-          connect: {
-            id: categoryId,
-          },
-        },
-        vendors: {
-          connect: vendors.map((id) => ({ id })),
-        },
-      },
+      data,
       include: {
         category: {
           select: {
@@ -35,9 +27,10 @@ export class ProductsService {
             slug: true,
           },
         },
-        vendors: true,
+        vendorProduct: true,
       },
     });
+
     return product;
   }
 
@@ -52,7 +45,7 @@ export class ProductsService {
       },
       include: {
         category: true,
-        vendors: true,
+        // vendors: true,
       },
     });
 
@@ -67,24 +60,16 @@ export class ProductsService {
     id: number,
     updateProductDto: UpdateProductDto,
   ): Promise<Product> {
-    const { vendors, ...rest } = updateProductDto;
-    const data = { ...rest };
-
     const { name } = updateProductDto;
     if (name) {
-      Object.assign(data).slug = slugify(name, { lower: true });
+      Object.assign(updateProductDto).slug = slugify(name, { lower: true });
     }
 
     const product = await this.prisma.product.update({
       where: {
         id,
       },
-      data: {
-        ...data,
-        vendors: {
-          connect: vendors.map((id) => ({ id })),
-        },
-      },
+      data: updateProductDto,
     });
     return product;
   }
@@ -95,5 +80,45 @@ export class ProductsService {
         id,
       },
     });
+  }
+
+  async buildCreateProductData(createProductDto: CreateProductDto) {
+    const { categoryId, vendorProductId, ...rest } = createProductDto;
+
+    let cost: number = createProductDto.cost || 0;
+
+    // If a vendor product is selected, use its price as the product's cost
+    if (!cost && vendorProductId) {
+      const vendorProduct = await this.vendorProductsService.findOne(
+        vendorProductId,
+      );
+      console.log(createProductDto);
+      console.log(vendorProduct);
+      cost = vendorProduct.price;
+    }
+
+    const data: XOR<ProductCreateInput, ProductUncheckedCreateInput> = {
+      ...rest,
+      cost,
+      slug: slugify(createProductDto.name, {
+        lower: true,
+      }),
+      category: {
+        connect: {
+          id: categoryId,
+        },
+      },
+    };
+
+    // If a vendor product is selected, connect it to the product
+    if (vendorProductId) {
+      data.vendorProduct = {
+        connect: {
+          id: vendorProductId,
+        },
+      };
+    }
+
+    return data;
   }
 }

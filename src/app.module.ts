@@ -8,7 +8,7 @@ import { UsersModule } from './users/users.module';
 import { PrismaService } from './prisma/prisma.service';
 import { CategoriesModule } from './categories/categories.module';
 import { ProductsModule } from './products/products.module';
-import { VendorModule } from './vendors/vendors.module';
+import { VendorsModule } from './vendors/vendors.module';
 import { EmployeesModule } from './employees/employees.module';
 
 @Module({
@@ -22,7 +22,7 @@ import { EmployeesModule } from './employees/employees.module';
     UsersModule,
     CategoriesModule,
     ProductsModule,
-    VendorModule,
+    VendorsModule,
     EmployeesModule,
   ],
   controllers: [AppController],

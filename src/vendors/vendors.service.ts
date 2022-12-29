@@ -1,13 +1,17 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Vendor } from '@prisma/client';
+import { Vendor, VendorProduct } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { Product } from '../products/entities/product.entity';
+import { CreateVendorProductDto } from './dto/create-vendor-product.dto';
 import { CreateVendorDto } from './dto/create-vendor.dto';
 import { UpdateVendorDto } from './dto/update-vendor.dto';
+import { VendorProductsService } from './vendor-products.service';
 
 @Injectable()
 export class VendorsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly vendorProductsService: VendorProductsService,
+  ) {}
 
   async create(createVendorDto: CreateVendorDto): Promise<Vendor> {
     const vendor = await this.prisma.vendor.create({
@@ -27,7 +31,7 @@ export class VendorsService {
         id,
       },
       include: {
-        products: true,
+        vendorProducts: true,
         _count: true,
       },
     });
@@ -58,17 +62,10 @@ export class VendorsService {
     });
   }
 
-  async vendorProducts(id: number): Promise<Product[]> {
-    const vendor = await this.prisma.vendor.findUnique({
-      where: {
-        id,
-      },
-      include: {
-        products: true,
-        _count: true,
-      },
-    });
-
-    return vendor.products;
+  async addProduct(
+    id: number,
+    createVendorProductDto: CreateVendorProductDto,
+  ): Promise<VendorProduct> {
+    return this.vendorProductsService.create(id, createVendorProductDto);
   }
 }

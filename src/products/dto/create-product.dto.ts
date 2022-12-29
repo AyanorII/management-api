@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsString, Min } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  Min,
+  ValidateIf,
+} from 'class-validator';
 export class CreateProductDto {
   @ApiProperty()
   @IsString()
@@ -12,6 +18,7 @@ export class CreateProductDto {
   price: number;
 
   @ApiProperty()
+  @ValidateIf((product: CreateProductDto) => !product.vendorProductId)
   @IsNumber()
   @Min(0)
   cost: number;
@@ -21,6 +28,7 @@ export class CreateProductDto {
   categoryId: number;
 
   @ApiProperty()
-  @IsNumber({}, { each: true })
-  vendors: number[];
+  @IsNumber()
+  @ValidateIf((product: CreateProductDto) => !product.cost)
+  vendorProductId: number;
 }

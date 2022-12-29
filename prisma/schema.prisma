@@ -44,7 +44,7 @@ model Vendor {
   website       String?
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
-  vendorProduct VendorProduct[]
+  vendorProducts VendorProduct[]
 }
 
 model Category {

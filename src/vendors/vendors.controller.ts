@@ -12,6 +12,7 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtGuard } from '../common/guards/jwt.guard';
+import { CreateVendorProductDto } from './dto/create-vendor-product.dto';
 import { CreateVendorDto } from './dto/create-vendor.dto';
 import { UpdateVendorDto } from './dto/update-vendor.dto';
 import { VendorsService } from './vendors.service';
@@ -47,5 +48,14 @@ export class VendorsController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.vendorsService.remove(+id);
+  }
+
+  @Post(':id/products')
+  addProduct(
+    @Param('id') id: string,
+    @Body() createVendorProductDto: CreateVendorProductDto,
+  ) {
+    console.log(typeof id);
+    return this.vendorsService.addProduct(+id, createVendorProductDto);
   }
 }
