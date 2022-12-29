@@ -9,4 +9,7 @@ export const configValidationSchema = Joi.object({
   ENV: Joi.string().valid('development', 'production').default('development'),
   THROTTLE_TTL: Joi.number().default(60),
   THROTTLE_LIMIT: Joi.number().default(10),
+  CLOUDINARY_CLOUD_NAME: Joi.string().required(),
+  CLOUDINARY_API_KEY: Joi.string().required(),
+  CLOUDINARY_API_SECRET: Joi.string(),
 });

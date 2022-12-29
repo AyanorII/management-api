@@ -12,6 +12,8 @@ import { PrismaService } from './prisma/prisma.service';
 import { ProductsModule } from './products/products.module';
 import { UsersModule } from './users/users.module';
 import { VendorsModule } from './vendors/vendors.module';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
+import { MulterModule } from '@nestjs/platform-express';
 
 @Module({
   imports: [
@@ -28,12 +30,16 @@ import { VendorsModule } from './vendors/vendors.module';
         limit: configService.get('THROTTLE_LIMIT'),
       }),
     }),
+    MulterModule.register({
+      dest: './uploads',
+    }),
     AuthModule,
     UsersModule,
     CategoriesModule,
     ProductsModule,
     VendorsModule,
     EmployeesModule,
+    CloudinaryModule,
   ],
   controllers: [AppController],
   providers: [
