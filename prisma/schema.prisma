@@ -22,6 +22,14 @@ model Product {
   categoryId      Int
   vendorProduct   VendorProduct? @relation(fields: [vendorProductId], references: [id])
   vendorProductId Int?           @unique
+  productImages   ProductImage[]
+}
+
+model ProductImage {
+  id        Int     @id @default(autoincrement())
+  url       String
+  product   Product @relation(fields: [productId], references: [id])
+  productId Int
 }
 
 model VendorProduct {
@@ -36,14 +44,14 @@ model VendorProduct {
 }
 
 model Vendor {
-  id            Int             @id @default(autoincrement())
-  name          String
-  phone         String?
-  email         String?
-  contact       String?
-  website       String?
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
+  id             Int             @id @default(autoincrement())
+  name           String
+  phone          String?
+  email          String?
+  contact        String?
+  website        String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
   vendorProducts VendorProduct[]
 }
 
