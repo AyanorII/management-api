@@ -6,3 +6,6 @@ export const ONE_WEEK = ONE_DAY * 7;
 
 export const ONE_KB = 1024;
 export const ONE_MB = ONE_KB * 1024;
+
+export const MAX_FILE_SIZE = ONE_MB * 2;
+export const MAX_FILES_FIELDS = 5;
