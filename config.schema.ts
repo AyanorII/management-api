@@ -20,4 +20,9 @@ export const configValidationSchema = Joi.object({
   CLOUDINARY_API_KEY: Joi.string().required(),
   CLOUDINARY_API_SECRET: Joi.string(),
   CLOUDINARY_FOLDER: Joi.string(),
+
+  // Mailer
+  MAILER_SERVICE: Joi.string().required(),
+  MAILER_USER: Joi.string().required(),
+  MAILER_PASS: Joi.string().required(),
 });
