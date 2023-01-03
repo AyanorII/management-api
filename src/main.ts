@@ -30,7 +30,11 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document);
 
   // Globals
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+    }),
+  );
   app.useGlobalFilters(new PrismaClientExceptionFilter());
 
   await app.listen(port);
