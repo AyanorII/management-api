@@ -33,14 +33,15 @@ model ProductImage {
 }
 
 model VendorProduct {
-  id        Int      @id @default(autoincrement())
+  id        Int         @id @default(autoincrement())
   name      String
   price     Float
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  vendor    Vendor   @relation(fields: [vendorId], references: [id])
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  vendor    Vendor      @relation(fields: [vendorId], references: [id])
   vendorId  Int
   Product   Product?
+  OrderItem OrderItem[]
 }
 
 model Vendor {
@@ -90,4 +91,23 @@ model Employee {
   photo     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Order {
+  id        Int         @id @default(autoincrement())
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  orderItem OrderItem[]
+  total     Float
+}
+
+model OrderItem {
+  id              Int           @id @default(autoincrement())
+  quantity        Int
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  order           Order         @relation(fields: [orderId], references: [id])
+  orderId         Int
+  vendorProduct   VendorProduct @relation(fields: [vendorProductId], references: [id])
+  vendorProductId Int
 }
