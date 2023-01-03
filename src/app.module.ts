@@ -15,6 +15,7 @@ import { PrismaService } from './prisma/prisma.service';
 import { ProductsModule } from './products/products.module';
 import { UsersModule } from './users/users.module';
 import { VendorsModule } from './vendors/vendors.module';
+import { OrdersModule } from './orders/orders.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { VendorsModule } from './vendors/vendors.module';
     EmployeesModule,
     CloudinaryModule,
     MailModule,
+    OrdersModule,
   ],
   controllers: [AppController],
   providers: [
