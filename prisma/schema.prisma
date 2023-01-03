@@ -54,6 +54,7 @@ model Vendor {
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
   vendorProducts VendorProduct[]
+  Order          Order[]
 }
 
 model Category {
@@ -99,11 +100,15 @@ model Order {
   updatedAt DateTime    @updatedAt
   orderItem OrderItem[]
   total     Float
+  vendor    Vendor      @relation(fields: [vendorId], references: [id])
+  vendorId  Int
 }
 
 model OrderItem {
   id              Int           @id @default(autoincrement())
   quantity        Int
+  subtotal        Float
+  cost            Float
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
   order           Order         @relation(fields: [orderId], references: [id])
