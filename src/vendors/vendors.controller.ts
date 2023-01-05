@@ -15,14 +15,19 @@ import { JwtGuard } from '../common/guards/jwt.guard';
 import { CreateVendorProductDto } from './dto/create-vendor-product.dto';
 import { CreateVendorDto } from './dto/create-vendor.dto';
 import { UpdateVendorDto } from './dto/update-vendor.dto';
+import { VendorProductsService } from './vendor-products.service';
 import { VendorsService } from './vendors.service';
+import { UpdateVendorProductDto } from './dto/update-vendor-product.dto';
 
 @ApiBearerAuth()
 @ApiTags('Vendors')
 @Controller('vendors')
 @UseGuards(JwtGuard)
 export class VendorsController {
-  constructor(private readonly vendorsService: VendorsService) {}
+  constructor(
+    private readonly vendorsService: VendorsService,
+    private readonly vendorProductsService: VendorProductsService
+  ) {}
 
   @Post()
   create(@Body() createVendorDto: CreateVendorDto) {
@@ -55,7 +60,18 @@ export class VendorsController {
     @Param('id') id: string,
     @Body() createVendorProductDto: CreateVendorProductDto,
   ) {
-    console.log(typeof id);
-    return this.vendorsService.addProduct(+id, createVendorProductDto);
+    return this.vendorProductsService.create(+id, createVendorProductDto);
+  }
+
+  @Patch(':id/products/:vendorProductId')
+  updateProduct(
+    @Param('id') id: number,
+    @Param('vendorProductId') vendorProductId: number,
+    @Body() updateVendorProductDto: UpdateVendorProductDto,
+  ) {
+    return this.vendorProductsService.update(
+      vendorProductId,
+      updateVendorProductDto,
+    );
   }
 }

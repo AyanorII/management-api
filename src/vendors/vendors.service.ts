@@ -1,7 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Vendor, VendorProduct } from '@prisma/client';
+import { Vendor } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateVendorProductDto } from './dto/create-vendor-product.dto';
 import { CreateVendorDto } from './dto/create-vendor.dto';
 import { UpdateVendorDto } from './dto/update-vendor.dto';
 import { VendorProductsService } from './vendor-products.service';
@@ -60,12 +59,5 @@ export class VendorsService {
         id,
       },
     });
-  }
-
-  async addProduct(
-    id: number,
-    createVendorProductDto: CreateVendorProductDto,
-  ): Promise<VendorProduct> {
-    return this.vendorProductsService.create(id, createVendorProductDto);
   }
 }
