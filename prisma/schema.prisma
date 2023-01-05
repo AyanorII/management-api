@@ -95,13 +95,13 @@ model Employee {
 }
 
 model Order {
-  id        Int         @id @default(autoincrement())
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-  orderItem OrderItem[]
-  total     Float
-  vendor    Vendor      @relation(fields: [vendorId], references: [id])
-  vendorId  Int
+  id         Int         @id @default(autoincrement())
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  orderItems OrderItem[]
+  total      Float
+  vendor     Vendor      @relation(fields: [vendorId], references: [id])
+  vendorId   Int
 }
 
 model OrderItem {
