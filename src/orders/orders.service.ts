@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { Order } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
-import { UpdateOrderDto } from './dto/update-order.dto';
 import { OrderItemsService } from './order-items.service';
 
 @Injectable()
@@ -41,19 +40,41 @@ export class OrdersService {
     return order;
   }
 
-  findAll() {
-    return `This action returns all orders`;
+  async findAll(): Promise<Order[]> {
+    const orders = await this.prisma.order.findMany({
+      include: {
+        _count: {
+          select: {
+            orderItems: true,
+          },
+        },
+      },
+    });
+    return orders;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} order`;
+  async findOne(id: number): Promise<Order> {
+    const order = await this.prisma.order.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        vendor: true,
+        orderItems: true,
+        _count: {
+          select: {
+            orderItems: true,
+          },
+        },
+      },
+    });
+
+    return order;
   }
 
-  update(id: number, updateOrderDto: UpdateOrderDto) {
-    return `This action updates a #${id} order`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} order`;
+  async remove(id: number): Promise<void> {
+    await this.prisma.order.delete({
+      where: { id },
+    });
   }
 }
