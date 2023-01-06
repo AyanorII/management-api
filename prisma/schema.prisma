@@ -28,7 +28,7 @@ model Product {
 model ProductImage {
   id        Int     @id @default(autoincrement())
   url       String
-  product   Product @relation(fields: [productId], references: [id])
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId Int
 }
 
@@ -38,7 +38,7 @@ model VendorProduct {
   price     Float
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
-  vendor    Vendor      @relation(fields: [vendorId], references: [id])
+  vendor    Vendor      @relation(fields: [vendorId], references: [id], onDelete: Cascade)
   vendorId  Int
   Product   Product?
   OrderItem OrderItem[]
@@ -111,8 +111,8 @@ model OrderItem {
   cost            Float
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
-  order           Order         @relation(fields: [orderId], references: [id])
+  order           Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
   orderId         Int
-  vendorProduct   VendorProduct @relation(fields: [vendorProductId], references: [id])
+  vendorProduct   VendorProduct @relation(fields: [vendorProductId], references: [id], onDelete: Cascade)
   vendorProductId Int
 }
