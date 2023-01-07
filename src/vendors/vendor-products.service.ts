@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { VendorProduct } from '@prisma/client';
+import { User, VendorProduct } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateVendorProductDto } from './dto/create-vendor-product.dto';
 import { UpdateVendorProductDto } from './dto/update-vendor-product.dto';
@@ -11,11 +11,21 @@ export class VendorProductsService {
   async create(
     vendorId: number,
     createVendorProductDto: CreateVendorProductDto,
+    user: User,
   ): Promise<VendorProduct> {
     const vendorProduct = await this.prisma.vendorProduct.create({
       data: {
         ...createVendorProductDto,
-        vendorId,
+        vendor: {
+          connect: {
+            id: vendorId,
+          },
+        },
+        user: {
+          connect: {
+            id: user.id,
+          },
+        },
       },
       include: {
         vendor: true,
@@ -24,10 +34,11 @@ export class VendorProductsService {
     return vendorProduct;
   }
 
-  async findOne(id: number): Promise<VendorProduct> {
-    const vendorProduct = await this.prisma.vendorProduct.findUnique({
+  async findOne(id: number, user: User): Promise<VendorProduct> {
+    const vendorProduct = await this.prisma.vendorProduct.findFirst({
       where: {
         id,
+        userId: user.id,
       },
     });
 
@@ -41,13 +52,24 @@ export class VendorProductsService {
   async update(
     vendorProductId: number,
     updateVendorProductDto: UpdateVendorProductDto,
+    user: User,
   ): Promise<VendorProduct> {
-    const vendorProduct = await this.prisma.vendorProduct.update({
-      where: {
-        id: vendorProductId,
-      },
-      data: updateVendorProductDto,
-    });
+    const [_count, vendorProduct] = await this.prisma.$transaction([
+      this.prisma.vendorProduct.updateMany({
+        where: {
+          id: vendorProductId,
+          userId: user.id,
+        },
+        data: updateVendorProductDto,
+      }),
+      this.prisma.vendorProduct.findFirst({
+        where: {
+          id: vendorProductId,
+          userId: user.id,
+        },
+      }),
+    ]);
+
     return vendorProduct;
   }
 }

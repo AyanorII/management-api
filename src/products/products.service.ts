@@ -118,6 +118,7 @@ export class ProductsService {
     if (!cost && vendorProductId) {
       const vendorProduct = await this.vendorProductsService.findOne(
         vendorProductId,
+        user,
       );
       cost = vendorProduct.price;
     }

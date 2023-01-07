@@ -63,21 +63,33 @@ export class VendorsController {
 
   @Post(':id/products')
   addProduct(
-    @Param('id') id: string,
+    @Param('id') id: number,
     @Body() createVendorProductDto: CreateVendorProductDto,
+    @GetUser() user: User,
   ) {
-    return this.vendorProductsService.create(+id, createVendorProductDto);
+    return this.vendorProductsService.create(id, createVendorProductDto, user);
+  }
+
+  @Get(':id/products/:vendorProductId')
+  getProduct(
+    @Param('id') _id: number,
+    @Param('vendorProductId') vendorProductId: number,
+    @GetUser() user: User,
+  ) {
+    return this.vendorProductsService.findOne(vendorProductId, user);
   }
 
   @Patch(':id/products/:vendorProductId')
   updateProduct(
     @Param('id') id: number,
     @Param('vendorProductId') vendorProductId: number,
+    @GetUser() user: User,
     @Body() updateVendorProductDto: UpdateVendorProductDto,
   ) {
     return this.vendorProductsService.update(
       vendorProductId,
       updateVendorProductDto,
+      user,
     );
   }
 }
