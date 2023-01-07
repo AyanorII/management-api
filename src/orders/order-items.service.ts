@@ -1,13 +1,16 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma, User } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrderItemDto } from './dto/create-order-item.dto';
-import { IOrderItem } from './interfaces/index';
 
 @Injectable()
 export class OrderItemsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async build(createOrderItemDto: CreateOrderItemDto): Promise<IOrderItem> {
+  async build(
+    createOrderItemDto: CreateOrderItemDto,
+    user: User,
+  ): Promise<Prisma.OrderItemCreateManyOrderInput> {
     const { vendorProductId } = createOrderItemDto;
 
     const vendorProduct = await this.prisma.vendorProduct.findUnique({
@@ -22,14 +25,22 @@ export class OrderItemsService {
       ...createOrderItemDto,
       cost,
       subtotal: cost * createOrderItemDto.quantity,
+      userId: user.id,
     };
   }
 
   async buildMany(
     createOrderItemDto: CreateOrderItemDto[],
-  ): Promise<IOrderItem[]> {
-    const itemsPromise = createOrderItemDto.map((item) => this.build(item));
+    user: User,
+  ): Promise<{
+    items: Prisma.OrderItemCreateManyOrderInput[];
+    total: number;
+  }> {
+    const itemsPromise = createOrderItemDto.map((item) =>
+      this.build(item, user),
+    );
     const items = await Promise.all(itemsPromise);
-    return items;
+    const total = items.reduce((acc, item) => acc + item.subtotal, 0);
+    return { items, total };
   }
 }
