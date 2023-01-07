@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Order, User } from '@prisma/client';
+import { MailService } from '../mail/mail.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { OrderItemsService } from './order-items.service';
@@ -9,12 +10,18 @@ export class OrdersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly orderItemsService: OrderItemsService,
+    private readonly mailService: MailService,
   ) {}
 
-  async create(createOrderDto: CreateOrderDto, user: User): Promise<Order> {
-    const { orderItems, vendorId, ...data } = createOrderDto;
+  async create(
+    vendorId,
+    createOrderDto: CreateOrderDto,
+    user: User,
+  ): Promise<Order> {
+    const { orderItems, ...data } = createOrderDto;
 
     const { items, total } = await this.orderItemsService.buildMany(
+      vendorId,
       orderItems,
       user,
     );
@@ -44,6 +51,23 @@ export class OrdersService {
         orderItems: true,
       },
     });
+
+    if (order.vendor.email) {
+      await this.mailService.sendMail({
+        from: {
+          name: user.companyName,
+          email: user.email,
+        },
+        to: order.vendor.email,
+        subject: 'New Order',
+        template: 'order',
+        context: {
+          order,
+          user,
+        },
+      });
+    }
+
     return order;
   }
 

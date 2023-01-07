@@ -1,13 +1,9 @@
-import { Type } from 'class-transformer';
-import { IsArray, IsNumber, ValidateNested } from 'class-validator';
-import { CreateOrderItemDto } from './create-order-item.dto';
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
+import { IsArray, ValidateNested } from 'class-validator';
+import { CreateOrderItemDto } from './create-order-item.dto';
 
 export class CreateOrderDto {
-  @ApiProperty()
-  @IsNumber()
-  vendorId: number;
-
   @ApiProperty()
   @IsArray()
   @ValidateNested({

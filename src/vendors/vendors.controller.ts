@@ -14,6 +14,8 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { User } from '@prisma/client';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { JwtGuard } from '../common/guards/jwt.guard';
+import { CreateOrderDto } from '../orders/dto/create-order.dto';
+import { OrdersService } from '../orders/orders.service';
 import { CreateVendorProductDto } from './dto/create-vendor-product.dto';
 import { CreateVendorDto } from './dto/create-vendor.dto';
 import { UpdateVendorProductDto } from './dto/update-vendor-product.dto';
@@ -29,6 +31,7 @@ export class VendorsController {
   constructor(
     private readonly vendorsService: VendorsService,
     private readonly vendorProductsService: VendorProductsService,
+    private readonly ordersService: OrdersService,
   ) {}
 
   @Post()
@@ -61,6 +64,7 @@ export class VendorsController {
     return this.vendorsService.remove(id, user);
   }
 
+  /* ---------------------------- Vendor Products --------------------------- */
   @Post(':id/products')
   addProduct(
     @Param('id') id: number,
@@ -92,4 +96,31 @@ export class VendorsController {
       user,
     );
   }
+  /* ---------------------------- Vendor Products --------------------------- */
+
+  /* -------------------------------- Orders -------------------------------- */
+  @Post(':id/orders')
+  createOrder(
+    @Param('id') id: number,
+    @Body() createOrderDto: CreateOrderDto,
+    @GetUser() user: User,
+  ) {
+    return this.ordersService.create(id, createOrderDto, user);
+  }
+
+  @Get()
+  getOrders(@GetUser() user: User) {
+    return this.ordersService.findAll(user);
+  }
+
+  @Get(':id')
+  getOneOrder(@Param('id') id: number, @GetUser() user: User) {
+    return this.ordersService.findOne(id, user);
+  }
+
+  @Delete(':id')
+  deleteOrder(@Param('id') id: number, @GetUser() user: User) {
+    return this.ordersService.remove(id, user);
+  }
+  /* -------------------------------- Orders -------------------------------- */
 }
