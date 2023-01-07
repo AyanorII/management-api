@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { ONE_MINUTE, ONE_WEEK } from '../constants';
+import { UserWithoutPassword } from '../users/interfaces';
 import { UsersService } from '../users/users.service';
 import { LoginDto } from './dto/login.dto';
 import { SignUpDto } from './dto/signup.dto';
@@ -18,7 +19,7 @@ export class AuthService {
 
   async signUp(signUpDto: SignUpDto): Promise<Tokens> {
     const user = await this.usersService.create(signUpDto);
-    const tokens = await this.getTokens(user.id, user.email);
+    const tokens = await this.getTokens(user);
     await this.updateRefreshToken(user.id, tokens.refresh_token);
 
     return tokens;
@@ -27,7 +28,7 @@ export class AuthService {
   async login(loginDto: LoginDto): Promise<Tokens> {
     const user = await this.usersService.findOneByEmail(loginDto.email);
     await this.checkHashMatches(loginDto.password, user.password);
-    const tokens = await this.getTokens(user.id, user.email);
+    const tokens = await this.getTokens(user);
     await this.updateRefreshToken(user.id, tokens.refresh_token);
 
     return tokens;
@@ -40,18 +41,22 @@ export class AuthService {
   async refreshToken(id: number, refreshToken: string): Promise<Tokens> {
     const user = await this.usersService.findOneById(id);
     await this.checkHashMatches(refreshToken, user.refreshToken);
-    const tokens = await this.getTokens(user.id, user.email);
+    const tokens = await this.getTokens(user);
     await this.updateRefreshToken(user.id, tokens.refresh_token);
 
     return tokens;
   }
 
-  async getTokens(userId: number, email: string): Promise<Tokens> {
+  async getTokens(user: UserWithoutPassword): Promise<Tokens> {
+    const { id, email, name, companyName: company } = user;
+
     const [access_token, refresh_token] = await Promise.all([
       this.jwtService.signAsync(
         {
-          sub: userId,
+          sub: id,
           email,
+          company,
+          name,
         },
         {
           secret: this.configService.get('JWT_SECRET'),
@@ -60,8 +65,10 @@ export class AuthService {
       ),
       this.jwtService.signAsync(
         {
-          sub: userId,
+          sub: id,
           email,
+          company,
+          name,
         },
         {
           secret: this.configService.get('JWT_REFRESH_SECRET'),
