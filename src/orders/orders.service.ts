@@ -84,8 +84,12 @@ export class OrdersService {
   }
 
   async remove(id: number, user: User): Promise<void> {
-    await this.prisma.order.deleteMany({
+    const { count } = await this.prisma.order.deleteMany({
       where: { id, userId: user.id },
     });
+
+    if (count === 0) {
+      throw new Error(`Order with id: '${id}' not found`);
+    }
   }
 }

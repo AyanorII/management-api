@@ -97,12 +97,16 @@ export class ProductsService {
   }
 
   async remove(id: number, user: User): Promise<void> {
-    await this.prisma.product.deleteMany({
+    const { count } = await this.prisma.product.deleteMany({
       where: {
         id,
         userId: user.id,
       },
     });
+
+    if (count === 0) {
+      throw new NotFoundException(`Product with id: '${id}' not found`);
+    }
   }
 
   async buildCreateProductData(createProductDto: CreateProductDto, user: User) {

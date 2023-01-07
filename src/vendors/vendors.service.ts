@@ -79,11 +79,15 @@ export class VendorsService {
   }
 
   async remove(id: number, user: User): Promise<void> {
-    await this.prisma.vendor.deleteMany({
+    const { count } = await this.prisma.vendor.deleteMany({
       where: {
         id,
         userId: user.id,
       },
     });
+
+    if (count === 0) {
+      throw new NotFoundException(`Vendor #${id} not found`);
+    }
   }
 }
