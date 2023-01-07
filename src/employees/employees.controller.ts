@@ -11,6 +11,8 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { User } from '@prisma/client';
+import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { JwtGuard } from '../common/guards/jwt.guard';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
@@ -24,31 +26,32 @@ export class EmployeesController {
   constructor(private readonly employeesService: EmployeesService) {}
 
   @Post()
-  create(@Body() createEmployeeDto: CreateEmployeeDto) {
-    return this.employeesService.create(createEmployeeDto);
+  create(@Body() createEmployeeDto: CreateEmployeeDto, @GetUser() user: User) {
+    return this.employeesService.create(createEmployeeDto, user);
   }
 
   @Get()
-  findAll() {
-    return this.employeesService.findAll();
+  findAll(@GetUser() user: User) {
+    return this.employeesService.findAll(user);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.employeesService.findOne(+id);
+  findOne(@Param('id') id: number, @GetUser() user: User) {
+    return this.employeesService.findOne(id, user);
   }
 
   @Patch(':id')
   update(
-    @Param('id') id: string,
+    @Param('id') id: number,
+    @GetUser() user: User,
     @Body() updateEmployeeDto: UpdateEmployeeDto,
   ) {
-    return this.employeesService.update(+id, updateEmployeeDto);
+    return this.employeesService.update(id, updateEmployeeDto, user);
   }
 
   @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.employeesService.remove(+id);
+  remove(@Param('id') id: number, @GetUser() user: User) {
+    return this.employeesService.remove(id, user);
   }
 }
