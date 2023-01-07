@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Product } from '@prisma/client';
+import { Prisma, Product, User } from '@prisma/client';
 import { ProductCreateInput, ProductUncheckedCreateInput, XOR } from 'prisma';
 import slugify from 'slugify';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
@@ -18,26 +18,36 @@ export class ProductsService {
 
   async create(
     createProductDto: CreateProductDto,
+    user: User,
     files?: Express.Multer.File[],
   ) {
-    const product = await this.createProduct(createProductDto);
+    const product = await this.createProduct(createProductDto, user);
 
     if (files) {
-      const productWithImages = await this.attachProductImages(product, files);
+      const productWithImages = await this.attachProductImages(
+        product,
+        files,
+        user,
+      );
       return productWithImages;
     }
 
     return product;
   }
 
-  async findAll(): Promise<Product[]> {
-    return this.prisma.product.findMany();
+  async findAll(user: User): Promise<Product[]> {
+    return this.prisma.product.findMany({
+      where: {
+        userId: user.id,
+      },
+    });
   }
 
-  async findOne(id: number): Promise<Product> {
-    const product = await this.prisma.product.findUnique({
+  async findOne(id: number, user: User): Promise<Product> {
+    const product = await this.prisma.product.findFirst({
       where: {
         id,
+        userId: user.id,
       },
       include: {
         category: true,
@@ -59,30 +69,43 @@ export class ProductsService {
   async update(
     id: number,
     updateProductDto: UpdateProductDto,
+    user: User,
   ): Promise<Product> {
     const { name } = updateProductDto;
+
     if (name) {
       Object.assign(updateProductDto).slug = slugify(name, { lower: true });
     }
 
-    const product = await this.prisma.product.update({
-      where: {
-        id,
-      },
-      data: updateProductDto,
-    });
+    const [_count, product] = await this.prisma.$transaction([
+      this.prisma.product.updateMany({
+        where: {
+          id,
+          userId: user.id,
+        },
+        data: updateProductDto,
+      }),
+      this.prisma.product.findFirst({
+        where: {
+          id,
+          userId: user.id,
+        },
+      }),
+    ]);
+
     return product;
   }
 
-  async remove(id: number): Promise<void> {
-    await this.prisma.product.delete({
+  async remove(id: number, user: User): Promise<void> {
+    await this.prisma.product.deleteMany({
       where: {
         id,
+        userId: user.id,
       },
     });
   }
 
-  async buildCreateProductData(createProductDto: CreateProductDto) {
+  async buildCreateProductData(createProductDto: CreateProductDto, user: User) {
     const { categoryId, vendorProductId, ...rest } = createProductDto;
 
     let cost: number = createProductDto.cost || 0;
@@ -106,6 +129,11 @@ export class ProductsService {
           id: categoryId,
         },
       },
+      user: {
+        connect: {
+          id: user.id,
+        },
+      },
     };
 
     // If a vendor product is given, connect it to the product
@@ -120,8 +148,8 @@ export class ProductsService {
     return data;
   }
 
-  async createProduct(CreateProductDto) {
-    const data = await this.buildCreateProductData(CreateProductDto);
+  async createProduct(createProductDto: CreateProductDto, user: User) {
+    const data = await this.buildCreateProductData(createProductDto, user);
 
     const product = await this.prisma.product.create({
       data,
@@ -151,10 +179,15 @@ export class ProductsService {
    * @param files
    * @returns Product with images attached
    */
-  async attachProductImages(product: Product, files: Express.Multer.File[]) {
+  async attachProductImages(
+    product: Product,
+    files: Express.Multer.File[],
+    user: User,
+  ) {
     const uploadImagesPromises = files.map((file) => this.uploadImage(file));
     const images = await Promise.all(uploadImagesPromises);
-    const urls = images.map((url) => ({ url }));
+    const productImages: Prisma.Enumerable<Prisma.ProductImageCreateManyProductInput> =
+      images.map((url) => ({ url, userId: user.id }));
 
     return this.prisma.product.update({
       where: {
@@ -163,7 +196,7 @@ export class ProductsService {
       data: {
         productImages: {
           createMany: {
-            data: urls,
+            data: productImages,
           },
         },
       },
