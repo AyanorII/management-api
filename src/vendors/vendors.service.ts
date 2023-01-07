@@ -1,33 +1,45 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Vendor } from '@prisma/client';
+import { User, Vendor } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateVendorDto } from './dto/create-vendor.dto';
 import { UpdateVendorDto } from './dto/update-vendor.dto';
-import { VendorProductsService } from './vendor-products.service';
 
 @Injectable()
 export class VendorsService {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly vendorProductsService: VendorProductsService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
-  async create(createVendorDto: CreateVendorDto): Promise<Vendor> {
+  async create(createVendorDto: CreateVendorDto, user: User): Promise<Vendor> {
     const vendor = await this.prisma.vendor.create({
-      data: createVendorDto,
+      data: {
+        ...createVendorDto,
+        user: {
+          connect: {
+            id: user.id,
+          },
+        },
+      },
     });
     return vendor;
   }
 
-  async findAll(): Promise<Vendor[]> {
-    const vendors = await this.prisma.vendor.findMany();
+  async findAll(user: User): Promise<Vendor[]> {
+    const { id } = user;
+
+    const vendors = await this.prisma.vendor.findMany({
+      where: {
+        user: {
+          id,
+        },
+      },
+    });
     return vendors;
   }
 
-  async findOne(id: number): Promise<Vendor> {
-    const vendor = await this.prisma.vendor.findUnique({
+  async findOne(id: number, user: User): Promise<Vendor> {
+    const vendor = await this.prisma.vendor.findFirst({
       where: {
         id,
+        userId: user.id,
       },
       include: {
         vendorProducts: true,
@@ -42,21 +54,35 @@ export class VendorsService {
     return vendor;
   }
 
-  async update(id: number, updateVendorDto: UpdateVendorDto): Promise<Vendor> {
-    const vendor = await this.prisma.vendor.update({
-      where: {
-        id,
-      },
-      data: updateVendorDto,
-    });
+  async update(
+    id: number,
+    updateVendorDto: UpdateVendorDto,
+    user: User,
+  ): Promise<Vendor> {
+    const [_count, vendor] = await this.prisma.$transaction([
+      this.prisma.vendor.updateMany({
+        where: {
+          id,
+          userId: user.id,
+        },
+        data: updateVendorDto,
+      }),
+      this.prisma.vendor.findFirst({
+        where: {
+          id,
+          userId: user.id,
+        },
+      }),
+    ]);
 
     return vendor;
   }
 
-  async remove(id: number): Promise<void> {
-    await this.prisma.vendor.delete({
+  async remove(id: number, user: User): Promise<void> {
+    await this.prisma.vendor.deleteMany({
       where: {
         id,
+        userId: user.id,
       },
     });
   }
