@@ -23,6 +23,8 @@ model Product {
   vendorProduct   VendorProduct? @relation(fields: [vendorProductId], references: [id])
   vendorProductId Int?           @unique
   productImages   ProductImage[]
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId          Int
 }
 
 model ProductImage {
@@ -30,6 +32,8 @@ model ProductImage {
   url       String
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId Int
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
 }
 
 model VendorProduct {
@@ -42,6 +46,8 @@ model VendorProduct {
   vendorId  Int
   Product   Product?
   OrderItem OrderItem[]
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
 }
 
 model Vendor {
@@ -55,6 +61,8 @@ model Vendor {
   updatedAt      DateTime        @updatedAt
   vendorProducts VendorProduct[]
   Order          Order[]
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         Int
 }
 
 model Category {
@@ -64,16 +72,27 @@ model Category {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   products  Product[]
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
 }
 
 model User {
-  id           Int      @id @default(autoincrement())
-  name         String
-  email        String   @unique
-  password     String
-  refreshToken String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id             Int             @id @default(autoincrement())
+  companyName    String
+  name           String
+  email          String          @unique
+  password       String
+  refreshToken   String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  products       Product[]
+  productImages  ProductImage[]
+  vendorProducts VendorProduct[]
+  vendors        Vendor[]
+  categories     Category[]
+  employees      Employee[]
+  orders         Order[]
+  orderItems     OrderItem[]
 }
 
 enum Gender {
@@ -92,6 +111,8 @@ model Employee {
   photo     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
 }
 
 model Order {
@@ -102,6 +123,8 @@ model Order {
   total      Float
   vendor     Vendor      @relation(fields: [vendorId], references: [id])
   vendorId   Int
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     Int
 }
 
 model OrderItem {
@@ -115,4 +138,6 @@ model OrderItem {
   orderId         Int
   vendorProduct   VendorProduct @relation(fields: [vendorProductId], references: [id], onDelete: Cascade)
   vendorProductId Int
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId          Int
 }
