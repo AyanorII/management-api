@@ -12,10 +12,10 @@ datasource db {
 
 model Product {
   id              Int            @id @default(autoincrement())
-  name            String         @unique
+  name            String
   price           Float
   cost            Float
-  slug            String         @unique
+  slug            String
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
   category        Category       @relation(fields: [categoryId], references: [id])
@@ -25,6 +25,8 @@ model Product {
   productImages   ProductImage[]
   user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId          Int
+
+  @@unique([name, categoryId, userId, slug])
 }
 
 model ProductImage {
@@ -67,13 +69,15 @@ model Vendor {
 
 model Category {
   id        Int       @id @default(autoincrement())
-  name      String    @unique
-  slug      String    @unique
+  name      String
+  slug      String
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   products  Product[]
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    Int
+
+  @@unique([name, userId, slug])
 }
 
 model User {
@@ -102,7 +106,7 @@ enum Gender {
 
 model Employee {
   id        Int      @id @default(autoincrement())
-  name      String   @unique
+  name      String
   phone     String
   gender    Gender   @default(FEMALE)
   startedAt DateTime
@@ -113,6 +117,8 @@ model Employee {
   updatedAt DateTime @updatedAt
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    Int
+
+  @@unique([name, userId])
 }
 
 model Order {
