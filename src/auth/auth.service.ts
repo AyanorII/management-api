@@ -2,7 +2,6 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { ONE_MINUTE, ONE_WEEK } from '../constants';
 import { UserWithoutPassword } from '../users/interfaces';
 import { UsersService } from '../users/users.service';
 import { LoginDto } from './dto/login.dto';
@@ -60,7 +59,7 @@ export class AuthService {
         },
         {
           secret: this.configService.get('JWT_SECRET'),
-          expiresIn: ONE_MINUTE * 15,
+          expiresIn: '15min',
         },
       ),
       this.jwtService.signAsync(
@@ -72,7 +71,7 @@ export class AuthService {
         },
         {
           secret: this.configService.get('JWT_REFRESH_SECRET'),
-          expiresIn: ONE_WEEK,
+          expiresIn: '7d',
         },
       ),
     ]);
