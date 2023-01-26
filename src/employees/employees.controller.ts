@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { User } from '@prisma/client';
-import { GetUser } from 'src/common/decorators/get-user.decorator';
+import { GetUser } from '../common/decorators/get-user.decorator';
 import { JwtGuard } from '../common/guards/jwt.guard';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';

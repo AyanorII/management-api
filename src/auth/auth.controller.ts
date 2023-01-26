@@ -7,7 +7,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { GetUser } from 'src/common/decorators/get-user.decorator';
+import { GetUser } from '../common/decorators/get-user.decorator';
 import { JwtGuard, RefreshTokenGuard } from '../common/guards';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';

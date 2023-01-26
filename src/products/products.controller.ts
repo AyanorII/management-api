@@ -16,7 +16,7 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { User } from '@prisma/client';
 import { diskStorage } from 'multer';
-import { GetUser } from 'src/common/decorators/get-user.decorator';
+import { GetUser } from '../common/decorators/get-user.decorator';
 import { JwtGuard } from '../common/guards/jwt.guard';
 import { MAX_FILES_FIELDS, MAX_FILE_SIZE } from '../constants';
 import { CreateProductDto } from './dto/create-product.dto';
