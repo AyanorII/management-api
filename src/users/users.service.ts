@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
@@ -109,7 +113,7 @@ export class UsersService {
     });
 
     if (!user) {
-      throw new BadRequestException('User not found');
+      throw new UnauthorizedException('Invalid credentials');
     }
 
     return user;

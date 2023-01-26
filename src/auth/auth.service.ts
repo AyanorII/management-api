@@ -41,7 +41,7 @@ export class AuthService {
     const user = await this.usersService.findOneById(id);
     await this.checkHashMatches(refreshToken, user.refreshToken);
     const tokens = await this.getTokens(user);
-    await this.updateRefreshToken(user.id, tokens.refresh_token);
+    await this.updateRefreshToken(id, tokens.refresh_token);
 
     return tokens;
   }
