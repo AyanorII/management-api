@@ -3,6 +3,7 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MailService } from './mail.service';
+import { MailerOptions, mockMailerOptions } from './mailer.provider';
 
 @Module({
   imports: [
@@ -11,7 +12,7 @@ import { MailService } from './mail.service';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         transport: {
-          service: configService.get('MAILER_SERVICE'),
+          service: configService.get('MAILER_SERVICE') || 'MAILER_SERVICE',
           auth: {
             user: configService.get('MAILER_USER'),
             pass: configService.get('MAILER_PASS'),
@@ -24,7 +25,7 @@ import { MailService } from './mail.service';
       }),
     }),
   ],
-  providers: [MailService],
-  exports: [MailService],
+  providers: [MailService, MailerOptions, mockMailerOptions],
+  exports: [MailService, MailerOptions, mockMailerOptions],
 })
 export class MailModule {}
