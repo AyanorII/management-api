@@ -26,6 +26,9 @@ describe('UsersService', () => {
 
   afterEach(async () => {
     await prisma.cleanDatabase();
+  });
+
+  afterAll(async () => {
     await prisma.$disconnect();
   });
 
@@ -64,7 +67,6 @@ describe('UsersService', () => {
     it('should return a user', async () => {
       const { id, email } = await usersService.create(userDto);
 
-      await usersService.findOneById(id);
       expect(usersService.findOneById(id)).resolves.toEqual(
         expect.objectContaining({
           id,
