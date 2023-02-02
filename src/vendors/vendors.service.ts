@@ -75,7 +75,11 @@ export class VendorsService {
       }),
     ]);
 
-    return vendor;
+    if (vendor) {
+      return vendor;
+    }
+
+    throw new NotFoundException(`Vendor #${id} not found`);
   }
 
   async remove(id: number, user: User): Promise<void> {
