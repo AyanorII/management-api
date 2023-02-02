@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
@@ -25,12 +29,18 @@ export class AuthService {
   }
 
   async login(loginDto: LoginDto): Promise<Tokens> {
-    const user = await this.usersService.findOneByEmail(loginDto.email);
-    await this.checkHashMatches(loginDto.password, user.password);
-    const tokens = await this.getTokens(user);
-    await this.updateRefreshToken(user.id, tokens.refresh_token);
+    try {
+      const user = await this.usersService.findOneByEmail(loginDto.email);
+      await this.checkHashMatches(loginDto.password, user.password);
+      const tokens = await this.getTokens(user);
+      await this.updateRefreshToken(user.id, tokens.refresh_token);
 
-    return tokens;
+      return tokens;
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw new UnauthorizedException('Invalid credentials');
+      }
+    }
   }
 
   async logout(id: number): Promise<void> {
@@ -79,9 +89,12 @@ export class AuthService {
     return { access_token, refresh_token };
   }
 
-  async updateRefreshToken(userId: number, refreshToken: string) {
+  async updateRefreshToken(
+    userId: number,
+    refreshToken: string,
+  ): Promise<UserWithoutPassword> {
     const hash = await this.hashData(refreshToken);
-    await this.usersService.update(userId, { refreshToken: hash });
+    return this.usersService.update(userId, { refreshToken: hash });
   }
 
   async checkHashMatches(data: string, encryptedData: string) {
