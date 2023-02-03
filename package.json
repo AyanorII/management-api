@@ -20,7 +20,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",
-    "test": "dotenv -e .env.test -- yarn docker:up && yarn prisma migrate deploy && jest --logHeapUsage --runInBand && yarn docker:down"
+    "test": "yarn docker:up && dotenv -e .env.test -- yarn prisma migrate deploy && dotenv -e .env.test -- jest --logHeapUsage --runInBand && yarn docker:down"
   },
   "dependencies": {
     "@hapi/joi": "^17.1.1",
