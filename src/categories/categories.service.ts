@@ -1,5 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Category, User } from '@prisma/client';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 import slugify from 'slugify';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
@@ -13,22 +18,32 @@ export class CategoriesService {
     createCategoryDto: CreateCategoryDto,
     user: User,
   ): Promise<Category> {
-    const { name } = createCategoryDto;
+    try {
+      const { name } = createCategoryDto;
 
-    const slug = slugify(name, { lower: true });
-    const category = await this.prisma.category.create({
-      data: {
-        name,
-        slug,
-        user: {
-          connect: {
-            id: user.id,
+      const slug = slugify(name, { lower: true });
+
+      const category = await this.prisma.category.create({
+        data: {
+          name,
+          slug,
+          user: {
+            connect: {
+              id: user.id,
+            },
           },
         },
-      },
-    });
+      });
 
-    return category;
+      return category;
+    } catch (error) {
+      if (
+        error instanceof PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
+        throw new BadRequestException('Category already exists');
+      }
+    }
   }
 
   async findAll(user: User): Promise<Category[]> {
