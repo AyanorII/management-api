@@ -53,7 +53,7 @@ describe('CategoriesService', () => {
     });
 
     it('should not create a category if user has already created one with the same name', async () => {
-      expect(
+      await expect(
         categoriesService.create({ name: categoryName }, user),
       ).rejects.toBeInstanceOf(BadRequestException);
     });
@@ -68,7 +68,7 @@ describe('CategoriesService', () => {
     });
 
     it("should be able to find all user's categories", async () => {
-      expect(categoriesService.findAll(user)).resolves.toEqual(
+      await expect(categoriesService.findAll(user)).resolves.toEqual(
         expect.arrayContaining([expect.objectContaining(category)]),
       );
     });
@@ -83,7 +83,7 @@ describe('CategoriesService', () => {
         },
       });
 
-      expect(
+      await expect(
         categoriesService.findOne(category.id, otherUser),
       ).rejects.toBeInstanceOf(NotFoundException);
     });

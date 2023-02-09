@@ -1,15 +1,12 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { User } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UserWithoutPassword } from './interfaces';
 import { UsersService } from './users.service';
 
 describe('UsersService', () => {
   let usersService: UsersService;
   let prisma: PrismaService;
-  let user: User | UserWithoutPassword;
 
   const userDto: CreateUserDto = {
     name: 'John Doe',
@@ -25,12 +22,14 @@ describe('UsersService', () => {
 
     usersService = module.get<UsersService>(UsersService);
     prisma = module.get<PrismaService>(PrismaService);
-
-    user = await usersService.create(userDto);
   });
 
   afterAll(async () => {
-    await Promise.all([prisma.cleanDatabase(), prisma.$disconnect()]);
+    await prisma.$disconnect();
+  });
+
+  afterEach(async () => {
+    await prisma.cleanDatabase();
   });
 
   it('should be defined', () => {
@@ -39,17 +38,22 @@ describe('UsersService', () => {
 
   describe('Create user', () => {
     it('should create a user', async () => {
+      const user = await usersService.create(userDto);
+
       expect(user).toHaveProperty('id');
       expect(user).not.toHaveProperty('password');
     });
 
     it('should not create a user if email is already in database', async () => {
-      expect(usersService.create(userDto)).rejects.toBeInstanceOf(
+      await usersService.create(userDto);
+
+      await expect(usersService.create(userDto)).rejects.toBeInstanceOf(
         BadRequestException,
       );
     });
 
     it('should store the hashed password in the database', async () => {
+      const user = await usersService.create(userDto);
       const { id } = user;
 
       const foundUser = await prisma.user.findUnique({
@@ -62,14 +66,15 @@ describe('UsersService', () => {
 
   describe('Read user', () => {
     it('should return a user', async () => {
+      const user = await usersService.create(userDto);
       const { id, email } = user;
 
-      expect(usersService.findOneById(id)).resolves.toEqual(
+      await expect(usersService.findOneById(id)).resolves.toEqual(
         expect.objectContaining({
           id,
         }),
       );
-      expect(usersService.findOneByEmail(email)).resolves.toEqual(
+      await expect(usersService.findOneByEmail(email)).resolves.toEqual(
         expect.objectContaining({
           email,
         }),
@@ -79,18 +84,21 @@ describe('UsersService', () => {
     it('should throw an exception if user is not found', async () => {
       const id = 1000000;
 
-      expect(usersService.findOneById(id)).rejects.toBeInstanceOf(
+      await expect(usersService.findOneById(id)).rejects.toBeInstanceOf(
         NotFoundException,
       );
     });
 
     it('should not expose the password', async () => {
+      const user = await usersService.create(userDto);
+
       expect(user).not.toHaveProperty('password');
     });
   });
 
   describe('Update user', () => {
     it('should update a user', async () => {
+      const user = await usersService.create(userDto);
       const { id } = user;
 
       const newName = 'Foo Bar';

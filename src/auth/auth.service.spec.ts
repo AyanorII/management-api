@@ -54,7 +54,7 @@ describe('AuthService', () => {
     });
 
     it('should not create a user if email is already in database', async () => {
-      expect(authService.signUp(signUpStubDto)).rejects.toBeInstanceOf(
+      await expect(authService.signUp(signUpStubDto)).rejects.toBeInstanceOf(
         BadRequestException,
       );
     });
@@ -78,7 +78,7 @@ describe('AuthService', () => {
         password: '',
       };
 
-      expect(authService.login(nonExistingUser)).rejects.toBeInstanceOf(
+      await expect(authService.login(nonExistingUser)).rejects.toBeInstanceOf(
         UnauthorizedException,
       );
     });

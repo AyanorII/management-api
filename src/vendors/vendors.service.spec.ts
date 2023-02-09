@@ -107,13 +107,13 @@ describe('VendorsService', () => {
     });
 
     it('should throw a NotFoundException if user not found', async () => {
-      expect(vendorsService.findOne(-1, user1)).rejects.toBeInstanceOf(
+      await expect(vendorsService.findOne(-1, user1)).rejects.toBeInstanceOf(
         NotFoundException,
       );
     });
 
     it("should not be able to return other user's vendor", async () => {
-      expect(
+      await expect(
         vendorsService.findOne(user2Vendor.id, user1),
       ).rejects.toBeInstanceOf(NotFoundException);
     });
@@ -136,13 +136,13 @@ describe('VendorsService', () => {
     });
 
     it('should throw a NotFoundException if vendor not found', async () => {
-      expect(
+      await expect(
         vendorsService.update(-1, { name: updatedName }, user1),
       ).rejects.toBeInstanceOf(NotFoundException);
     });
 
     it("should not be able to update other user's vendor", async () => {
-      expect(
+      await expect(
         vendorsService.update(
           user2Vendor.id,
           { name: 'Updated Vendor' },
@@ -166,13 +166,13 @@ describe('VendorsService', () => {
     });
 
     it('should throw a NotFoundException if user not found', async () => {
-      expect(vendorsService.remove(-1, user1)).rejects.toBeInstanceOf(
+      await expect(vendorsService.remove(-1, user1)).rejects.toBeInstanceOf(
         NotFoundException,
       );
     });
 
     it("should not be able to remove other user's vendor", async () => {
-      expect(
+      await expect(
         vendorsService.remove(user2Vendor.id, user1),
       ).rejects.toBeInstanceOf(NotFoundException);
     });
