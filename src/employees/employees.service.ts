@@ -1,8 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Employee, User } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateEmployeeDto } from './dto/create-employee.dto';
-import { UpdateEmployeeDto } from './dto/update-employee.dto';
+import { CreateEmployeeDto, UpdateEmployeeDto } from './dto';
 
 @Injectable()
 export class EmployeesService {
@@ -12,7 +11,9 @@ export class EmployeesService {
     createEmployeeDto: CreateEmployeeDto,
     user: User,
   ): Promise<Employee> {
-    const startedAt = new Date(createEmployeeDto.startedAt);
+    const startedAt = createEmployeeDto.startedAt
+      ? new Date(createEmployeeDto.startedAt)
+      : new Date();
 
     const employee = await this.prisma.employee.create({
       data: {
@@ -76,6 +77,10 @@ export class EmployeesService {
         },
       }),
     ]);
+
+    if (!employee) {
+      throw new NotFoundException(`Employee #${id} not found`);
+    }
 
     return employee;
   }
