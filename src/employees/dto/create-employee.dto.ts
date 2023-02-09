@@ -1,13 +1,14 @@
+import { Matches } from '@nestjs/class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Gender } from '@prisma/client';
 import {
-  IsBoolean,
   IsDateString,
   IsEnum,
   IsNotEmpty,
   IsNumber,
   IsString,
 } from 'class-validator';
+import { EMAIL_REGEX } from 'src/constants';
 export class CreateEmployeeDto {
   @ApiProperty()
   @IsString()
@@ -19,16 +20,17 @@ export class CreateEmployeeDto {
   gender: Gender;
 
   @ApiProperty()
-  @IsString()
-  phone: string;
-
-  @ApiProperty()
   @IsDateString()
-  startedAt: string;
+  startedAt?: string;
 
   @ApiProperty()
-  @IsBoolean()
-  active: boolean;
+  @IsString()
+  phone?: string;
+
+  @ApiProperty()
+  @IsString()
+  @Matches(EMAIL_REGEX)
+  email?: string;
 
   @ApiProperty()
   @IsNumber()
