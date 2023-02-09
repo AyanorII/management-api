@@ -107,7 +107,8 @@ enum Gender {
 model Employee {
   id        Int      @id @default(autoincrement())
   name      String
-  phone     String
+  phone     String?
+  email     String?
   gender    Gender   @default(FEMALE)
   startedAt DateTime
   active    Boolean  @default(true)
