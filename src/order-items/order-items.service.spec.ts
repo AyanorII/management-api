@@ -14,6 +14,8 @@ describe('OrderItemsService', () => {
   let vendorProductsService: VendorProductsService;
   let prisma: PrismaService;
   let user: User;
+  let orderItemObject: Prisma.OrderItemCreateManyOrderInput;
+  let orderItemObject2: Prisma.OrderItemCreateManyOrderInput;
 
   const vendorProductMock: VendorProduct = {
     id: 1,
@@ -35,6 +37,11 @@ describe('OrderItemsService', () => {
     userId: 1,
   };
 
+  const vendorProductsMockMap = {
+    1: vendorProductMock,
+    2: vendorProductMock2,
+  };
+
   const createOrderItemDto: CreateOrderItemDto = {
     quantity: 3,
     vendorProductId: 1,
@@ -43,20 +50,6 @@ describe('OrderItemsService', () => {
   const createOrderItemDto2: CreateOrderItemDto = {
     quantity: 5,
     vendorProductId: 2,
-  };
-
-  const orderItemObject: Prisma.OrderItemCreateManyOrderInput = {
-    ...createOrderItemDto,
-    cost: vendorProductMock.price,
-    subtotal: vendorProductMock.price * createOrderItemDto.quantity,
-    userId: user.id,
-  };
-
-  const orderItemObject2: Prisma.OrderItemCreateManyOrderInput = {
-    ...createOrderItemDto2,
-    cost: vendorProductMock2.price,
-    subtotal: vendorProductMock2.price * createOrderItemDto2.quantity,
-    userId: user.id,
   };
 
   beforeEach(async () => {
@@ -73,6 +66,10 @@ describe('OrderItemsService', () => {
     );
     prisma = module.get<PrismaService>(PrismaService);
 
+    jest
+      .spyOn(vendorProductsService, 'findOne')
+      .mockImplementation((id) => vendorProductsMockMap[id]);
+
     user = await prisma.user.create({
       data: {
         email: 'john@doe.com',
@@ -81,10 +78,25 @@ describe('OrderItemsService', () => {
         companyName: 'John Doe Company',
       },
     });
+
+    orderItemObject = {
+      ...createOrderItemDto,
+      cost: vendorProductMock.price,
+      subtotal: vendorProductMock.price * createOrderItemDto.quantity,
+      userId: user.id,
+    };
+
+    orderItemObject2 = {
+      ...createOrderItemDto2,
+      cost: vendorProductMock2.price,
+      subtotal: vendorProductMock2.price * createOrderItemDto2.quantity,
+      userId: user.id,
+    };
   });
 
   afterEach(async () => {
     await prisma.cleanDatabase();
+    jest.clearAllMocks();
   });
 
   afterAll(async () => {
@@ -97,10 +109,6 @@ describe('OrderItemsService', () => {
 
   describe('Build', () => {
     it('should return a new order item object', async () => {
-      jest
-        .spyOn(vendorProductsService, 'findOne')
-        .mockResolvedValue(vendorProductMock);
-
       const orderItemObject: Prisma.OrderItemCreateManyOrderInput = {
         ...createOrderItemDto,
         cost: vendorProductMock.price,
@@ -118,20 +126,13 @@ describe('OrderItemsService', () => {
 
   describe('BuildMany', () => {
     it('should return an array of order item objects', async () => {
-      // const createOrderItemDto2: CreateOrderItemDto = {
-      //   ...createOrderItemDto,
-      // const subtotal1 = vendorProductMock.price * createOrderItemDto.quantity;
-      // const subtotal2 = vendorProductMock2.price * createOrderItemDto2.quantity;
       const total = orderItemObject.subtotal + orderItemObject2.subtotal;
-
       const createManyOrderItemsDto = [createOrderItemDto, createOrderItemDto2];
 
       const orderItemsObject: {
         items: Prisma.OrderItemCreateManyOrderInput[];
         total: number;
       } = await orderItemsService.buildMany(createManyOrderItemsDto, user);
-
-      // console.log(orderItemsObject);
 
       expect(orderItemsObject.items).toHaveLength(
         createManyOrderItemsDto.length,

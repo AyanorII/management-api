@@ -41,8 +41,7 @@ export class OrderItemsService {
 
     const items = await Promise.all(itemsPromise);
     const total = items.reduce((acc, item) => acc + item.subtotal, 0);
-    console.log(items);
-    console.log({ items, total });
+
     return { items, total };
   }
 }
