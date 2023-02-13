@@ -3,7 +3,7 @@ import { Order, User } from '@prisma/client';
 import { MailService } from '../mail/mail.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
-import { OrderItemsService } from './order-items.service';
+import { OrderItemsService } from '../order-items/order-items.service';
 
 @Injectable()
 export class OrdersService {
@@ -21,7 +21,6 @@ export class OrdersService {
     const { orderItems, ...data } = createOrderDto;
 
     const { items, total } = await this.orderItemsService.buildMany(
-      vendorId,
       orderItems,
       user,
     );

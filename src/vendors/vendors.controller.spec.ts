@@ -3,13 +3,13 @@ import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { MailModule } from '../mail/mail.module';
 import { MailService } from '../mail/mail.service';
-import { OrderItemsService } from '../orders/order-items.service';
 import { OrdersService } from '../orders/orders.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { VendorProductsService } from './vendor-products.service';
 import { VendorsController } from './vendors.controller';
 import { VendorsService } from './vendors.service';
 import { MailerOptions } from '../mail/mailer.provider';
+import { OrderItemsService } from '../order-items/order-items.service';
 
 describe('VendorsController', () => {
   let controller: VendorsController;

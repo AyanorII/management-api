@@ -1,4 +1,3 @@
-import { MailerModule } from '@nestjs-modules/mailer';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
@@ -12,7 +11,7 @@ import { CategoriesModule } from './categories/categories.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { EmployeesModule } from './employees/employees.module';
 import { MailModule } from './mail/mail.module';
-import { MailerOptions } from './mail/mailer.provider';
+import { OrderItemsModule } from './order-items/order-items.module';
 import { OrdersModule } from './orders/orders.module';
 import { PrismaService } from './prisma/prisma.service';
 import { ProductsModule } from './products/products.module';
@@ -37,7 +36,6 @@ import { VendorsModule } from './vendors/vendors.module';
     MulterModule.register({
       dest: './uploads',
     }),
-    // MailerModule.forRootAsync(MailerOptions),
     AuthModule,
     UsersModule,
     CategoriesModule,
@@ -47,13 +45,13 @@ import { VendorsModule } from './vendors/vendors.module';
     CloudinaryModule,
     MailModule,
     OrdersModule,
+    OrderItemsModule,
   ],
   controllers: [AppController],
   providers: [
     AppService,
     PrismaService,
     { provide: APP_GUARD, useClass: ThrottlerGuard },
-    // { provide: 'MAILER_OPTIONS', useValue: MailerOptions },
   ],
 })
 export class AppModule {}
