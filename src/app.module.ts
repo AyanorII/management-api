@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
+import { MongooseModule } from '@nestjs/mongoose';
 import { MulterModule } from '@nestjs/platform-express';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { configValidationSchema } from '../config.schema';
@@ -24,6 +25,13 @@ import { VendorsModule } from './vendors/vendors.module';
       isGlobal: true,
       envFilePath: '.env',
       validationSchema: configValidationSchema,
+    }),
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        uri: configService.get('MONGO_URI'),
+      }),
     }),
     ThrottlerModule.forRootAsync({
       imports: [ConfigModule],
