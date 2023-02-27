@@ -10,4 +10,6 @@ export const ONE_MB = ONE_KB * 1024;
 export const MAX_FILE_SIZE = ONE_MB * 2;
 export const MAX_FILES_FIELDS = 5;
 
-export const EMAIL_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
+export const PASSWORD_REGEX =
+  /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
+export const EMAIL_REGEX = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;

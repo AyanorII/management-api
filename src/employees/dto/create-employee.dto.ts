@@ -1,9 +1,8 @@
-import { Matches } from '@nestjs/class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Gender } from '@prisma/client';
-import { EMAIL_REGEX } from '../../constants';
 import {
   IsDateString,
+  IsEmail,
   IsEnum,
   IsNotEmpty,
   IsNumber,
@@ -29,7 +28,7 @@ export class CreateEmployeeDto {
 
   @ApiProperty()
   @IsString()
-  @Matches(EMAIL_REGEX)
+  @IsEmail()
   email?: string;
 
   @ApiProperty()
