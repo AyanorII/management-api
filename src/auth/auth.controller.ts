@@ -9,10 +9,11 @@ import {
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { GetUser } from '../common/decorators/get-user.decorator';
 import { JwtGuard, RefreshTokenGuard } from '../common/guards';
+import { UserDocument } from '../users/schemas/user.schema';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { SignUpDto } from './dto/signup.dto';
-import { JwtPayload, Tokens } from './interfaces';
+import { Tokens } from './interfaces';
 
 @ApiBearerAuth()
 @ApiTags('Auth')
@@ -35,14 +36,14 @@ export class AuthController {
   @UseGuards(JwtGuard)
   @HttpCode(HttpStatus.OK)
   @Post('/logout')
-  async logout(@GetUser() user: JwtPayload): Promise<void> {
-    return this.authService.logout(user.sub);
+  async logout(@GetUser() user: UserDocument): Promise<void> {
+    return this.authService.logout(user.id);
   }
 
   @UseGuards(RefreshTokenGuard)
   @HttpCode(HttpStatus.OK)
   @Post('/refresh')
-  async refreshToken(@GetUser() user: JwtPayload): Promise<Tokens> {
-    return this.authService.refreshToken(user.sub, user.refreshToken);
+  async refreshToken(@GetUser() user: UserDocument): Promise<Tokens> {
+    return this.authService.refreshToken(user);
   }
 }

@@ -1,12 +1,9 @@
-import {
-  Injectable,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { UserWithoutPassword } from '../users/interfaces';
+import { v4 as uuidv4 } from 'uuid';
+import { UserDocument } from '../users/schemas/user.schema';
 import { UsersService } from '../users/users.service';
 import { LoginDto } from './dto/login.dto';
 import { SignUpDto } from './dto/signup.dto';
@@ -21,6 +18,8 @@ export class AuthService {
   ) {}
 
   async signUp(signUpDto: SignUpDto): Promise<Tokens> {
+    signUpDto.password = await this.hashData(signUpDto.password);
+
     const user = await this.usersService.create(signUpDto);
     const tokens = await this.getTokens(user);
     await this.updateRefreshToken(user.id, tokens.refresh_token);
@@ -29,60 +28,61 @@ export class AuthService {
   }
 
   async login(loginDto: LoginDto): Promise<Tokens> {
-    try {
-      const user = await this.usersService.findOneByEmail(loginDto.email);
-      await this.checkHashMatches(loginDto.password, user.password);
-      const tokens = await this.getTokens(user);
-      await this.updateRefreshToken(user.id, tokens.refresh_token);
+    const { email, password } = loginDto;
 
-      return tokens;
-    } catch (error) {
-      if (error instanceof NotFoundException) {
-        throw new UnauthorizedException('Invalid credentials');
-      }
-    }
-  }
-
-  async logout(id: number): Promise<void> {
-    await this.usersService.update(id, { refreshToken: null });
-  }
-
-  async refreshToken(id: number, refreshToken: string): Promise<Tokens> {
-    const user = await this.usersService.findOneById(id);
-    await this.checkHashMatches(refreshToken, user.refreshToken);
+    const user = await this.authenticateUser({ email, password });
     const tokens = await this.getTokens(user);
-    await this.updateRefreshToken(id, tokens.refresh_token);
+    await this.updateRefreshToken(user.id, tokens.refresh_token);
 
     return tokens;
   }
 
-  async getTokens(user: UserWithoutPassword): Promise<Tokens> {
-    const { id, email, name, companyName: company } = user;
+  async logout(id: string): Promise<void> {
+    await this.usersService.removeRefreshToken(id);
+  }
+
+  async refreshToken(user: UserDocument): Promise<Tokens> {
+    const tokens = await this.getTokens(user);
+    await this.updateRefreshToken(user.id, tokens.refresh_token);
+
+    return tokens;
+  }
+
+  async getTokens(user: UserDocument): Promise<Tokens> {
+    const { id, email, name } = user;
+
+    const accessTokenData = {
+      payload: {
+        sub: id,
+        email,
+        company: 'Company',
+        name,
+      },
+      options: {
+        secret: this.configService.get('JWT_SECRET'),
+        expiresIn: '5min',
+      },
+    };
+
+    const refreshTokenData = {
+      payload: {
+        sessionId: uuidv4(),
+        email,
+      },
+      options: {
+        secret: this.configService.get('JWT_REFRESH_SECRET'),
+        expiresIn: '7d',
+      },
+    };
 
     const [access_token, refresh_token] = await Promise.all([
       this.jwtService.signAsync(
-        {
-          sub: id,
-          email,
-          company,
-          name,
-        },
-        {
-          secret: this.configService.get('JWT_SECRET'),
-          expiresIn: '15min',
-        },
+        accessTokenData.payload,
+        accessTokenData.options,
       ),
       this.jwtService.signAsync(
-        {
-          sub: id,
-          email,
-          company,
-          name,
-        },
-        {
-          secret: this.configService.get('JWT_REFRESH_SECRET'),
-          expiresIn: '7d',
-        },
+        refreshTokenData.payload,
+        refreshTokenData.options,
       ),
     ]);
 
@@ -90,22 +90,40 @@ export class AuthService {
   }
 
   async updateRefreshToken(
-    userId: number,
+    userId: string,
     refreshToken: string,
-  ): Promise<UserWithoutPassword> {
+  ): Promise<UserDocument> {
     const hash = await this.hashData(refreshToken);
+
     return this.usersService.update(userId, { refreshToken: hash });
   }
 
-  async checkHashMatches(data: string, encryptedData: string) {
-    const hashMatches = await bcrypt.compare(data, encryptedData);
+  async authenticateUser({
+    email,
+    password,
+  }: Pick<LoginDto, 'email' | 'password'>): Promise<UserDocument> {
+    const user = await this.usersService.findOne({ email });
+    const passwordMatches = await this.checkHashMatches(
+      password,
+      user.password,
+    );
 
-    if (!hashMatches) {
+    if (!passwordMatches) {
       throw new UnauthorizedException('Invalid credentials');
     }
+
+    return user;
   }
 
-  hashData(data: string, salt = 10) {
+  async checkHashMatches(
+    data: string,
+    encryptedData: string,
+  ): Promise<boolean> {
+    return bcrypt.compare(data, encryptedData);
+  }
+
+  async hashData(data: string): Promise<string> {
+    const salt = await bcrypt.genSalt();
     return bcrypt.hash(data, salt);
   }
 }
