@@ -1,12 +1,19 @@
 import { Module } from '@nestjs/common';
-import { EmployeesService } from './employees.service';
-import { EmployeesController } from './employees.controller';
+import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from '../auth/auth.module';
-import { PrismaService } from '../prisma/prisma.service';
+import { EmployeesRepository } from './employee.repository';
+import { EmployeesController } from './employees.controller';
+import { EmployeesService } from './employees.service';
+import { Employee, EmployeeSchema } from './schemas/employee.schema';
 
 @Module({
-  imports: [AuthModule],
+  imports: [
+    MongooseModule.forFeature([
+      { name: Employee.name, schema: EmployeeSchema },
+    ]),
+    AuthModule,
+  ],
   controllers: [EmployeesController],
-  providers: [EmployeesService, PrismaService]
+  providers: [EmployeesService, EmployeesRepository],
 })
 export class EmployeesModule {}

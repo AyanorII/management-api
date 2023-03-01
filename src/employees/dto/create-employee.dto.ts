@@ -1,13 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Gender } from '@prisma/client';
 import {
   IsDateString,
   IsEmail,
   IsEnum,
   IsNotEmpty,
   IsNumber,
+  IsOptional,
   IsString,
 } from 'class-validator';
+import { Gender } from '../schemas/employee.schema';
 export class CreateEmployeeDto {
   @ApiProperty()
   @IsString()
@@ -20,18 +21,29 @@ export class CreateEmployeeDto {
 
   @ApiProperty()
   @IsDateString()
+  @IsOptional()
   startedAt?: string;
 
   @ApiProperty()
   @IsString()
+  @IsOptional()
   phone?: string;
 
   @ApiProperty()
-  @IsString()
+  @IsOptional()
   @IsEmail()
   email?: string;
 
   @ApiProperty()
   @IsNumber()
   salary: number;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsString()
+  photo?: number;
+
+  @ApiProperty()
+  @IsString()
+  userId: string;
 }

@@ -1,100 +1,77 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { Employee, User } from '@prisma/client';
-import { PrismaService } from '../prisma/prisma.service';
-import { CreateEmployeeDto, UpdateEmployeeDto } from './dto';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { FilterQuery } from 'mongoose';
+import { CreateEmployeeDto } from './dto';
+import { UpdateEmployeeDto } from './dto/update-employee.dto';
+import { EmployeesRepository } from './employee.repository';
+import { EmployeeDocument } from './schemas/employee.schema';
 
 @Injectable()
 export class EmployeesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly employeesRepository: EmployeesRepository) {}
 
   async create(
     createEmployeeDto: CreateEmployeeDto,
-    user: User,
-  ): Promise<Employee> {
-    const startedAt = createEmployeeDto.startedAt
-      ? new Date(createEmployeeDto.startedAt)
-      : new Date();
+  ): Promise<EmployeeDocument> {
+    createEmployeeDto.startedAt =
+      createEmployeeDto.startedAt || new Date().toISOString();
 
-    const employee = await this.prisma.employee.create({
-      data: {
-        ...createEmployeeDto,
-        startedAt,
-        user: {
-          connect: {
-            id: user.id,
-          },
-        },
-      },
-    });
-
-    return employee;
+    try {
+      const employee = this.employeesRepository.create(createEmployeeDto);
+      return employee;
+    } catch (err) {
+      if (err instanceof Error) {
+        throw new BadRequestException(err.message);
+      }
+    }
   }
 
-  async findAll(user: User): Promise<Employee[]> {
-    const employees = await this.prisma.employee.findMany({
-      where: {
-        userId: user.id,
-      },
-      orderBy: {
-        active: 'desc',
-      },
-    });
+  async findAll(
+    filterQuery?: FilterQuery<EmployeeDocument>,
+    // TODO: add pagination params
+  ): Promise<EmployeeDocument[]> {
+    const employees = await this.employeesRepository.findAll(filterQuery);
     return employees;
   }
 
-  async findOne(id: number, user: User): Promise<Employee> {
-    const employee = await this.prisma.employee.findFirst({
-      where: {
-        id,
-        userId: user.id,
-      },
-    });
+  async findOne(
+    filterQuery: FilterQuery<EmployeeDocument>,
+  ): Promise<EmployeeDocument> {
+    const employee = await this.employeesRepository.findOne(filterQuery);
 
     if (!employee) {
-      throw new NotFoundException(`Employee #${id} not found`);
+      throw new NotFoundException(`Employee not found`);
     }
 
     return employee;
   }
 
   async update(
-    id: number,
+    filterQuery: FilterQuery<EmployeeDocument>,
     updateEmployeeDto: UpdateEmployeeDto,
-    user: User,
-  ): Promise<Employee> {
-    const [_count, employee] = await this.prisma.$transaction([
-      this.prisma.employee.updateMany({
-        where: {
-          id,
-          userId: user.id,
-        },
-        data: updateEmployeeDto,
-      }),
-      this.prisma.employee.findFirst({
-        where: {
-          id,
-          userId: user.id,
-        },
-      }),
-    ]);
+  ): Promise<EmployeeDocument> {
+    try {
+      const employee = await this.employeesRepository.update(
+        filterQuery,
+        updateEmployeeDto,
+      );
 
-    if (!employee) {
-      throw new NotFoundException(`Employee #${id} not found`);
+      if (!employee) {
+        throw new NotFoundException(`Employee not found`);
+      }
+
+      return employee;
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new BadRequestException(error.message);
+      }
     }
-
-    return employee;
   }
 
-  async remove(id: number, user: User): Promise<void> {
-    const { count } = await this.prisma.employee.deleteMany({
-      where: {
-        id,
-        userId: user.id,
-      },
-    });
-
-    if (count === 0) {
-      throw new NotFoundException(`Employee #${id} not found`);
-    }
+  async remove(filterQuery: FilterQuery<EmployeeDocument>): Promise<void> {
+    await this.employeesRepository.delete(filterQuery);
   }
 }

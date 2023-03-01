@@ -1,22 +1,21 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
   HttpCode,
-  HttpStatus,
   Param,
   Patch,
   Post,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { User } from '@prisma/client';
 import { GetUser } from '../common/decorators/get-user.decorator';
 import { JwtGuard } from '../common/guards/jwt.guard';
+import { UserDocument } from '../users/schemas/user.schema';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
 import { EmployeesService } from './employees.service';
+import { HttpStatus, Delete } from '@nestjs/common';
 
 @ApiTags('Employees')
 @ApiBearerAuth()
@@ -26,32 +25,41 @@ export class EmployeesController {
   constructor(private readonly employeesService: EmployeesService) {}
 
   @Post()
-  create(@Body() createEmployeeDto: CreateEmployeeDto, @GetUser() user: User) {
-    return this.employeesService.create(createEmployeeDto, user);
+  create(
+    @Body() createEmployeeDto: CreateEmployeeDto,
+    @GetUser() user: UserDocument,
+  ) {
+    return this.employeesService.create({
+      userId: user.id,
+      ...createEmployeeDto,
+    });
   }
 
   @Get()
-  findAll(@GetUser() user: User) {
-    return this.employeesService.findAll(user);
+  findAll(@GetUser() user: UserDocument) {
+    return this.employeesService.findAll({ userId: user.id });
   }
 
   @Get(':id')
-  findOne(@Param('id') id: number, @GetUser() user: User) {
-    return this.employeesService.findOne(id, user);
+  findOne(@Param('id') id: string, @GetUser() user: UserDocument) {
+    return this.employeesService.findOne({ id, userId: user.id });
   }
 
   @Patch(':id')
   update(
-    @Param('id') id: number,
-    @GetUser() user: User,
+    @Param('id') id: string,
+    @GetUser() user: UserDocument,
     @Body() updateEmployeeDto: UpdateEmployeeDto,
   ) {
-    return this.employeesService.update(id, updateEmployeeDto, user);
+    return this.employeesService.update(
+      { id, userId: user.id },
+      updateEmployeeDto,
+    );
   }
 
   @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':id')
-  remove(@Param('id') id: number, @GetUser() user: User) {
-    return this.employeesService.remove(id, user);
+  remove(@Param('id') id: number, @GetUser() user: UserDocument) {
+    return this.employeesService.remove({ id, userId: user.id });
   }
 }
