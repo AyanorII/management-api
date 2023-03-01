@@ -28,7 +28,7 @@ export class UsersService {
   }
 
   async findAll(): Promise<UserDocument[]> {
-    const users = await this.usersRepository.findAll();
+    const users = await this.usersRepository.findAll({});
 
     users.forEach((user) => delete user.password);
 
@@ -51,7 +51,7 @@ export class UsersService {
     id: string,
     updateUserDto: UpdateUserDto,
   ): Promise<UserDocument> {
-    const user = await this.usersRepository.update(id, updateUserDto);
+    const user = await this.usersRepository.update({ id }, updateUserDto);
 
     if (!user) {
       throw new NotFoundException(`User not found`);
