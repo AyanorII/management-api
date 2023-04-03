@@ -7,7 +7,7 @@ import { ProductsController } from './products.controller';
 import { ProductsService } from './products.service';
 
 @Module({
-  imports: [AuthModule, VendorsModule, CloudinaryModule],
+  imports: [AuthModule, CloudinaryModule],
   controllers: [ProductsController],
   providers: [ProductsService, PrismaService],
 })

@@ -47,7 +47,7 @@ import { VendorsModule } from './vendors/vendors.module';
     AuthModule,
     UsersModule,
     CategoriesModule,
-    ProductsModule,
+    // ProductsModule,
     VendorsModule,
     EmployeesModule,
     CloudinaryModule,

@@ -33,4 +33,8 @@ export class CreateVendorDto {
   @IsString()
   @IsOptional()
   contact?: string;
+
+  @ApiProperty()
+  @IsString()
+  userId: string;
 }
